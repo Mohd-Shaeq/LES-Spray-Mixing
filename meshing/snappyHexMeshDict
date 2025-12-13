@@ -1,0 +1,170 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  Field           | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   Operation       | Version:  v2112                                 |
+|   \\  /    And             | Website:  https://openfoam.org                 |
+|    \\/     Manipulation    |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Which steps to run
+castellatedMesh    true;
+snap               true;
+addLayers          false;
+
+// Geometry definition
+geometry
+{
+    Geometrie
+    {
+        type    triSurfaceMesh;
+        file    "Geometrie.stl";
+        regions {}
+    }
+
+    Verfeinerungszylinder
+    {
+        type    searchableCylinder;
+        point1 (0 0 0);
+        point2 (0 0 -0.02);
+        radius 0.043;
+    }
+}
+
+// Castellated mesh controls
+castellatedMeshControls
+{
+    // Cell limits
+    maxLocalCells       1000000;
+    maxGlobalCells      20000000;
+
+    // Refinement stopping criteria
+    minRefinementCells  10;
+
+    // Load balancing
+    maxLoadUnbalance    0.10;
+
+    // Refinement transition
+    nCellsBetweenLevels 1;
+
+    // Feature edge refinement
+    features
+    (
+        {
+            file  "Geometrie.eMesh";
+            level 6;
+        }
+    );
+
+    // Surface refinement
+    refinementSurfaces
+    {
+        Geometrie
+        {
+            level (1 1);
+            patchInfo
+            {
+                type wall;
+            }
+        }
+    }
+
+    // Feature angle resolution
+    resolveFeatureAngle 30;
+
+    // Region-wise refinement
+    refinementRegions
+    {
+        Verfeinerungszylinder
+        {
+            mode   distance;
+            levels ((0.02 3));
+        }
+    }
+
+    // Mesh selection point (must be inside the domain)
+    locationInMesh (0 0 -0.02);
+
+    // Allow free-standing face zones
+    allowFreeStandingZoneFaces true;
+}
+
+// Snapping controls
+snapControls
+{
+    nSmoothPatch         3;
+    tolerance            2.0;
+    nSolveIter           30;
+    nRelaxIter           5;
+
+    // Feature snapping
+    nFeatureSnapIter     10;
+    implicitFeatureSnap  false;
+    explicitFeatureSnap  true;
+    multiRegionFeatureSnap true;
+}
+
+// Layer addition controls (disabled globally)
+addLayersControls
+{
+    relativeSizes true;
+
+    layers
+    {
+        Geometrie
+        {
+            nSurfaceLayers 3;
+        }
+    }
+
+    expansionRatio           1.0;
+    finalLayerThickness      0.3;
+    minThickness             0.1;
+    nGrow                    0;
+
+    featureAngle             60;
+    slipFeatureAngle         30;
+
+    nRelaxIter               3;
+    nSmoothSurfaceNormals    1;
+    nSmoothNormals           3;
+    nSmoothThickness         10;
+
+    maxFaceThicknessRatio        0.5;
+    maxThicknessToMedialRatio    0.3;
+    minMedialAxisAngle           90;
+
+    nBufferCellsNoExtrude    0;
+    nLayerIter               50;
+}
+
+// Mesh quality controls
+meshQualityControls
+{
+    #include "meshQualityDict"
+
+    nSmoothScale    4;
+    errorReduction  0.75;
+}
+
+// Write options
+writeFlags
+(
+    scalarLevels
+    layerSets
+    layerFields
+);
+
+// Merge tolerance
+mergeTolerance 1e-6;
+
+// ************************************************************************* //
