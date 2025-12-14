@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""
-CLI post-processing tool for OpenFOAM species fields.
-
-Reads H2, O2, N2 from time directories, computes mixing metrics,
-lambda-based zone fractions, generates plots, and writes result tables.
-
-Author: (your name)
-"""
-
 import os
 import re
 import argparse
